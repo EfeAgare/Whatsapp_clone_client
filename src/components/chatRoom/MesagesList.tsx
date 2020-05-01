@@ -1,5 +1,6 @@
 import moment from 'moment';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import { ChatQueryMessage } from './ChatsRoomScreen';
 
@@ -20,6 +21,8 @@ const MessageItem = styled.div`
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   margin-top: 10px;
   margin-bottom: 10px;
+  width: 500px;
+  line-height: 1.8;
   clear: both;
 
   &::after {
@@ -64,15 +67,27 @@ interface MessagesListProps {
   messages: Array<ChatQueryMessage>;
 }
 
-const MessageList: React.FC<MessagesListProps> = ({ messages }) => (
-  <Container>
-    {messages.map((message: any) => (
-      <MessageItem key={message.id}>
-        <Contents>{message.content}</Contents>
-        <Timestamp>{moment(message.createdAt).format('HH:mm')}</Timestamp>
-      </MessageItem>
-    ))}
-  </Container>
-);
+const MessageList: React.FC<MessagesListProps> = ({ messages }) => {
+  const selfRef = useRef(null);
+
+  useEffect(() => {
+    if (!selfRef.current) return;
+
+    const selfDOMNode = ReactDOM.findDOMNode(selfRef.current) as HTMLElement;
+
+    selfDOMNode.scrollTop = Number.MAX_SAFE_INTEGER;
+  }, [messages.length]);
+
+  return (
+    <Container ref={selfRef}>
+      {messages.map((message: any) => (
+        <MessageItem key={message.id} data-testid="message-item">
+          <Contents data-testid="message-content">{message.content}</Contents>
+          <Timestamp data-testid="message-date">{moment(message.createdAt).format('HH:mm')}</Timestamp>
+        </MessageItem>
+      ))}
+    </Container>
+  );
+};
 
 export default MessageList;
