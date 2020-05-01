@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { cleanup, render, waitFor } from '@testing-library/react';
-import ChatsList from '../components/ChatsListScreen/ChatsList';
+import ChatsList from '../components/Chats/ChatsList';
 
 describe('ChatsList', () => {
   afterEach(cleanup);
