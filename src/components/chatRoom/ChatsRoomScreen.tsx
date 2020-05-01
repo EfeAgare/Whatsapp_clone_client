@@ -1,4 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
+import { History } from 'history';
+import styled from 'styled-components';
+
+import MessagesList from './MesagesList';
+import ChatRoomNavBar from './ChatRoomNavbar';
+import MessageInput from './MessageInput';
 
 const getChatQuery = `
   query GetChat($chatId: ID!) {
@@ -15,8 +21,16 @@ const getChatQuery = `
   }
 `;
 
+const Container = styled.div`
+  background: url(/assets/chat-background.jpg);
+  display: flex;
+  flex-flow: column;
+  height: 100vh;
+`;
+
 interface ChatRoomScreenParams {
   match: { params: { chatId: string } };
+  history: History;
 }
 
 export interface ChatQueryMessage {
@@ -38,6 +52,7 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
   match: {
     params: { chatId },
   },
+  history,
 }) => {
   const [chat, setChat] = useState<OptionalChatQueryResult>(null);
   useMemo(async () => {
@@ -57,21 +72,31 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
     setChat(chat);
   }, [chatId]);
 
+  const onSendMessage = useCallback(
+    (content: string) => {
+      if (!chat) return null;
+
+      const message = {
+        id: (chat.messages.length + 10).toString(),
+        createdAt: new Date(),
+        content,
+      };
+
+      setChat({
+        ...chat,
+        messages: chat.messages.concat(message),
+      });
+    },
+    [chat]
+  );
   if (!chat) return null;
 
   return (
-    <div>
-      <img src={chat.picture} alt="Profile" />
-      <div>{chat.name}</div>
-      <ul>
-        {chat.messages.map((message) => (
-          <li key={message.id}>
-            <div>{message.content}</div>
-            <div>{message.createdAt}</div>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Container>
+      <ChatRoomNavBar chat={chat} history={history} />
+      {chat.messages && <MessagesList messages={chat.messages} />}
+      <MessageInput onSendMessage={onSendMessage} />
+    </Container>
   );
 };
 
