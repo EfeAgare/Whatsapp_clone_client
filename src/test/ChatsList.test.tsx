@@ -8,10 +8,11 @@ import {
   fireEvent,
   screen,
 } from '@testing-library/react';
-import ChatsList, { getChatsQuery } from '../components/Chats/ChatsList';
+import ChatsList from '../components/Chats/ChatsList';
 import { createBrowserHistory } from 'history';
 
 import { mockApolloClient } from '../test-helpers';
+import { getChatsQuery } from '../graphQl/queries/chats.query';
 
 describe('ChatsList', () => {
   afterEach(() => {

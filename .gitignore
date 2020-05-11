@@ -24,3 +24,5 @@ yarn-error.log*
 
 
 .env
+
+src/graphql/types.tsx

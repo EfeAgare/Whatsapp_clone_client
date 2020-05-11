@@ -4,8 +4,8 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { ListItem, List } from '@material-ui/core';
 import dotenv from 'dotenv';
-import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import { getChatsQuery } from '../../graphQl/queries/chats.query';
 
 dotenv.config();
 
@@ -62,20 +62,7 @@ const MessageDate = styled.div`
 `;
 
 // query
-export const getChatsQuery = gql`
-  query getChats {
-    chats {
-      id
-      name
-      picture
-      lastMessage {
-        id
-        content
-        createdAt
-      }
-    }
-  }
-`;
+
 
 interface ChatsListProps {
   history: History;
