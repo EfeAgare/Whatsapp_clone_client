@@ -2,14 +2,20 @@ import React, { useCallback } from 'react';
 import { History } from 'history';
 import { defaultDataIdFromObject } from 'apollo-cache-inmemory';
 import styled from 'styled-components';
-import { useQuery, useMutation } from '@apollo/react-hooks';
+// import { useQuery, useMutation } from '@apollo/react-hooks';
 import MessagesList from './MesagesList';
 import ChatRoomNavBar from './ChatRoomNavbar';
 import MessageInput from './MessageInput';
 import { getChatsQuery } from '../../graphQl/queries/chats.query';
-import { getChatQuery } from '../../graphQl/queries/chat.query';
-import { addMessageMutation } from '../../graphQl/mutations/addMessage.mutation';
+// import { getChatQuery } from '../../graphQl/queries/chat.query';
+// import { addMessageMutation } from '../../graphQl/mutations/addMessage.mutation';
 import * as fragments from '../../graphQl/fragments';
+
+import {
+  useAddMessageMutation,
+  useGetChatQuery,
+  GetChatsQuery,
+} from '../../graphQl/types';
 
 const Container = styled.div`
   background: url(/assets/chat-background.jpg);
@@ -46,15 +52,20 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
   },
   history,
 }) => {
-  const { data } = useQuery<any>(getChatQuery, {
+  const { data, loading } = useGetChatQuery({
     variables: { chatId },
   });
 
-  const [addMessage] = useMutation(addMessageMutation);
+  // const [addMessage] = useMutation(addMessageMutation);
+  const [addMessage] = useAddMessageMutation();
 
-  const chat = data?.chat;
   const onSendMessage = useCallback(
     (content: string) => {
+      if (data === undefined) {
+        return null;
+      }
+      const chat = data.chat;
+      if (chat === null) return null;
       addMessage({
         variables: { chatId, content },
         optimisticResponse: {
@@ -86,19 +97,13 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
               return;
             }
 
-            if (
-              fullChat === null ||
-              fullChat.messages === null ||
-              data === null ||
-              data.addMessage === null ||
-              data.addMessage.id === null
-            ) {
+            if (fullChat === null || fullChat.messages === null) {
               return;
             }
             if (
               fullChat.messages.some(
                 (currentMessage: any) =>
-                  currentMessage.id === data.addMessage.id
+                  data.addMessage && currentMessage.id === data.addMessage.id
               )
             ) {
               return;
@@ -115,9 +120,9 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
             });
           }
 
-          let clientChatsData;
+          let clientChatsData: GetChatsQuery | null;
           try {
-            clientChatsData = client.readQuery<ChatsResult>({
+            clientChatsData = client.readQuery({
               query: getChatsQuery,
             });
             console.log(clientChatsData);
@@ -126,10 +131,7 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
             return null;
           }
 
-          if (!clientChatsData || clientChatsData === null) {
-            return null;
-          }
-          if (!clientChatsData.chats || clientChatsData.chats === undefined) {
+          if (!clientChatsData || clientChatsData.chats === null) {
             return null;
           }
 
@@ -143,7 +145,6 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
 
           const chatWhereAdded = chats[chatIndex];
 
-          chatWhereAdded.lastMessage = data.addMessage;
           // The chat will appear at the top of the ChatsList component
           chats.splice(chatIndex, 1);
           chats.unshift(chatWhereAdded);
@@ -155,15 +156,22 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
         },
       });
     },
-    [chat, chatId, addMessage]
+    [data, chatId, addMessage]
   );
 
-  if (!chat) return null;
+  if (data === undefined) {
+    return null;
+  }
+  const chat = data.chat;
+  const loadingChat = loading;
+
+  if (loadingChat) return null;
+  if (chat === null) return null;
 
   return (
     <Container>
       <ChatRoomNavBar chat={chat} history={history} />
-      {chat.messages && <MessagesList messages={chat.messages} />}
+      {chat?.messages && <MessagesList messages={chat.messages} />}
       <MessageInput onSendMessage={onSendMessage} />
     </Container>
   );

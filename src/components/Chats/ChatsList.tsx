@@ -4,8 +4,8 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { ListItem, List } from '@material-ui/core';
 import dotenv from 'dotenv';
-import { useQuery } from '@apollo/react-hooks';
-import { getChatsQuery } from '../../graphQl/queries/chats.query';
+// import { useQuery } from '@apollo/react-hooks';
+import { useGetChatsQuery } from '../../graphQl/types';
 
 dotenv.config();
 
@@ -69,8 +69,7 @@ interface ChatsListProps {
 }
 
 const ChatsList: React.FC<ChatsListProps> = ({ history }) => {
-  const { data } = useQuery<any>(getChatsQuery);
-
+  
   const navToChat = useCallback(
     (chat) => {
       history.push(`chats/${chat.id}`);
@@ -78,6 +77,7 @@ const ChatsList: React.FC<ChatsListProps> = ({ history }) => {
     [history]
   );
 
+  const { data } = useGetChatsQuery();
   if (data === undefined || data.chats === undefined) {
     return null;
   }

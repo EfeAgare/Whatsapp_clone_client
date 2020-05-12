@@ -1,5 +1,5 @@
-schema: src/graphQl/queries/chat.query.ts
-documents: ...
+schema: http://localhost:4000/graphql
+documents: './src/**/*.{tsx,ts}'
 overwrite: true
 generates:
   src/graphQl/types.tsx:
