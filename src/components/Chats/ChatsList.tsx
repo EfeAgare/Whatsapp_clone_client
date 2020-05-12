@@ -74,7 +74,7 @@ const ChatsList: React.FC<ChatsListProps> = ({ history }) => {
     (chat) => {
       history.push(`chats/${chat.id}`);
     },
-    [history]
+    [history, useGetChatsQuery]
   );
 
   const { data } = useGetChatsQuery();

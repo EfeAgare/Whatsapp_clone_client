@@ -5,5 +5,8 @@ export const FRAGMENT_MESSAGE =  gql`
     id
     createdAt
     content
+    chat {
+      id
+    }
   }
 `;

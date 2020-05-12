@@ -2,8 +2,7 @@ import moment from 'moment';
 import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
-import { Message } from '../../graphQl/types';
-// import { ChatQueryMessage } from './ChatsRoomScreen';
+import { ChatQueryMessage } from './ChatsRoomScreen';
 
 const Container = styled.div`
   display: block;
@@ -65,7 +64,7 @@ const Timestamp = styled.div`
 `;
 
 interface MessagesListProps {
-  messages: Array<Message>;
+  messages: Array<ChatQueryMessage>;
 }
 
 const MessageList: React.FC<MessagesListProps> = ({ messages }) => {
