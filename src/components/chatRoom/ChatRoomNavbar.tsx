@@ -5,6 +5,10 @@ import React from 'react';
 import { useCallback } from 'react';
 import styled from 'styled-components';
 import { History } from 'history';
+import DeleteIcon from '@material-ui/icons/Delete';
+import gql from 'graphql-tag';
+import { useRemoveChatMutation } from '../../graphQl/types';
+import { eraseChat } from '../../services/cache.service';
 //import ChatsRoomScreen, { ChatQueryResult } from './ChatsRoomScreen';
 
 const Container = styled(Toolbar)`
@@ -35,11 +39,45 @@ const Name = styled.div`
   line-height: 56px;
 `;
 
+const Rest = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const DeleteButton = styled(Button)`
+  color: var(--primary-text) !important;
+`;
+
+export const removeChatMutation = gql`
+  mutation RemoveChat($chatId: ID!) {
+    removeChat(chatId: $chatId)
+  }
+`;
+
 interface ChatNavbarProps {
   history: History;
-  chat?: { picture?: string | null; name?: string | null };
+  chat: { picture?: string | null; name?: string | null; id: string };
 }
 const ChatRoomNavBar: React.FC<ChatNavbarProps> = ({ chat, history }) => {
+  const [removeChat] = useRemoveChatMutation({
+    variables: {
+      chatId: chat.id,
+    },
+
+    update: (client, { data }) => {
+      if (data && data.removeChat) {
+        eraseChat(client, data.removeChat);
+      }
+    },
+  });
+
+  const handleRemoveChat = useCallback(() => {
+    removeChat().then(() => {
+      history.replace('/chats');
+    });
+  }, [removeChat, history]);
+
   const navBack = useCallback(() => {
     history.replace('/chats');
   }, [history]);
@@ -55,6 +93,12 @@ const ChatRoomNavBar: React.FC<ChatNavbarProps> = ({ chat, history }) => {
           <Name data-testid="chat-name">{chat.name}</Name>
         </React.Fragment>
       )}
+
+      <Rest>
+        <DeleteButton data-testid="delete-button" onClick={handleRemoveChat}>
+          <DeleteIcon />
+        </DeleteButton>
+      </Rest>
     </Container>
   );
 };

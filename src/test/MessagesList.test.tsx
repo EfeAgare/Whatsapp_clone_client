@@ -1,7 +1,7 @@
 import { createMemoryHistory } from 'history';
 import React from 'react';
 import { cleanup, render, getByTestId } from '@testing-library/react';
-import MessagesList from '../components/chatRoom/MesagesList';
+import MessagesList from '../components/ChatRoom/MesagesList';
 
 describe('MessagesList', () => {
   afterEach(cleanup);

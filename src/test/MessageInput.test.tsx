@@ -1,7 +1,7 @@
 import { createMemoryHistory } from 'history';
 import React from 'react';
 import { cleanup, render, waitFor, fireEvent } from '@testing-library/react';
-import MessageInput from '../components/chatRoom/MessageInput';
+import MessageInput from '../components/ChatRoom/MessageInput';
 
 describe('MessageInput;', () => {
   afterEach(cleanup);
