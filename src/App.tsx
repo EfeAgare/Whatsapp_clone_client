@@ -9,15 +9,18 @@ import {
 } from 'react-router-dom';
 import ChatsRoomScreen from './components/chatRoom/ChatsRoomScreen';
 import MyAnimatedSwitch from './components/animation/AnimatedSwitch';
-import { useCacheService } from './services/cache.service';
+
+import AuthScreen from './components/AuthScreen/index';
+import { withAuth } from './services/auth.service';
 
 const App: React.FC = () => {
-  useCacheService()
+
   return (
     <BrowserRouter>
       <MyAnimatedSwitch>
-        <Route exact path="/chats" component={ChatsListScreen} />
-        <Route exact path="/chats/:chatId" component={ChatsRoomScreen} />
+        <Route exact path="/chats" component={withAuth(ChatsListScreen)} />
+        <Route exact path="/chats/:chatId" component={withAuth(ChatsRoomScreen)} />
+        <Route exact path="/sign-(in|up)" component={AuthScreen} />
         {/* <Route
         exact
         path="/chats/:chatId"
