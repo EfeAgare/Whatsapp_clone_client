@@ -6,6 +6,9 @@ import {
   MessageFragment,
   useMessageAddedSubscription,
   GetChatsQuery,
+  ChatFragment,
+  useChatAddedSubscription,
+  useChatRemovedSubscription,
 } from '../graphQl/types';
 
 type Client = Pick<
@@ -18,6 +21,22 @@ export const useCacheService = () => {
     onSubscriptionData: ({ client, subscriptionData: { data } }) => {
       if (data) {
         writeMessage(client, data.messageAdded);
+      }
+    },
+  });
+
+  useChatAddedSubscription({
+    onSubscriptionData: ({ client, subscriptionData: { data } }) => {
+      if (data) {
+        writeChat(client, data.chatAdded);
+      }
+    },
+  });
+
+  useChatRemovedSubscription({
+    onSubscriptionData: ({ client, subscriptionData: { data } }) => {
+      if (data) {
+        eraseChat(client, data.chatRemoved);
       }
     },
   });
@@ -34,7 +53,7 @@ export const writeMessage = (client: Client, message: MessageFragment) => {
     return;
   }
   try {
-    // The readFragment method enables you to read data from any normalized cache 
+    // The readFragment method enables you to read data from any normalized cache
     // object that was stored as part of any query result
     // `id` is any id that could be returned by `dataIdFromObject`.
     fullChat = client.readFragment<FullChat>({
@@ -94,6 +113,89 @@ export const writeMessage = (client: Client, message: MessageFragment) => {
   // The chat will appear at the top of the ChatsList component
   chats.splice(chatIndex, 1);
   chats.unshift(chatWhereAdded);
+
+  client.writeQuery({
+    query: getChatsQuery,
+    data: { chats: chats },
+  });
+};
+
+export const writeChat = (client: Client, chat: ChatFragment) => {
+  const chatId = defaultDataIdFromObject(chat);
+  if (chatId === null) {
+    return;
+  }
+
+  client.writeFragment({
+    id: chatId,
+    fragment: fragments.chat,
+    fragmentName: 'Chat',
+    data: chat,
+  });
+
+  let data;
+  try {
+    data = client.readQuery<GetChatsQuery>({
+      query: getChatsQuery,
+    });
+  } catch (e) {
+    return;
+  }
+
+  if (!data) return;
+
+  const chats = data.chats;
+
+  if (!chats) return;
+  if (chats.some((c: any) => c.id === chat.id)) return;
+
+  chats.unshift(chat);
+
+  client.writeQuery({
+    query: getChatsQuery,
+    data: { chats },
+  });
+};
+
+export const eraseChat = (client: Client, chatId: string) => {
+  const chatType = {
+    __typename: 'Chat',
+    id: chatId,
+  };
+
+  const chatIdFromObject = defaultDataIdFromObject(chatType);
+  if (chatIdFromObject === null) {
+    return;
+  }
+
+  client.writeFragment({
+    id: chatIdFromObject,
+    fragment: fragments.fullChat,
+    fragmentName: 'FullChat',
+    data: null,
+  });
+
+  let data: GetChatsQuery | null;
+  try {
+    data = client.readQuery<GetChatsQuery>({
+      query: getChatsQuery,
+    });
+  } catch (e) {
+    return;
+  }
+
+  if (!data || !data.chats) return;
+
+  const chats = data.chats;
+
+  if (!chats) return;
+
+  const chatIndex = chats.findIndex((c: any) => c.id === chatId);
+
+  if (chatIndex === -1) return;
+
+  // The chat will appear at the top of the ChatsList component
+  chats.splice(chatIndex, 1);
 
   client.writeQuery({
     query: getChatsQuery,

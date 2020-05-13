@@ -13,6 +13,7 @@ import MessageInput from './MessageInput';
 
 import { useAddMessageMutation, useGetChatQuery } from '../../graphQl/types';
 import { writeMessage } from '../../services/cache.service';
+import { Redirect } from 'react-router-dom';
 
 const Container = styled.div`
   background: url(/assets/chat-background.jpg);
@@ -98,9 +99,13 @@ const ChatsRoomScreen: React.FC<ChatRoomScreenParams> = ({
   if (loadingChat) return null;
   if (chat === null) return null;
 
+  // Chat was probably removed from cache by the subscription handler
+  if (!chat) {
+    return <Redirect to="/chats" />;
+  }
   return (
     <Container>
-      <ChatRoomNavBar chat={chat} history={history} />
+      {chat?.id && <ChatRoomNavBar chat={chat} history={history} />}
       {chat?.messages && <MessagesList messages={chat.messages} />}
       <MessageInput onSendMessage={onSendMessage} />
     </Container>
