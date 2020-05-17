@@ -5,5 +5,6 @@ export default gql`
     id
     name
     picture
+    username
   }
 `;
