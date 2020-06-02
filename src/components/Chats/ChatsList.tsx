@@ -4,7 +4,6 @@ import moment from 'moment';
 import styled from 'styled-components';
 import { ListItem, List } from '@material-ui/core';
 import dotenv from 'dotenv';
-// import { useQuery } from '@apollo/react-hooks';
 import { useGetChatsQuery } from '../../graphQl/types';
 
 dotenv.config();

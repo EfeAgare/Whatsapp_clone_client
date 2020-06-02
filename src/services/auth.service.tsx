@@ -43,7 +43,7 @@ export const withAuth = <P extends object>(
       return <Redirect to="/sign-in" />;
     }
 
-    useCacheService();
+    // useCacheService();
 
     const signOut = useSignOut();
     const { data, error, loading } = useMeQuery();

@@ -4,8 +4,6 @@ import {
   BrowserRouter,
   Route,
   Redirect,
-  Switch,
-  RouteComponentProps,
 } from 'react-router-dom';
 import ChatsRoomScreen from './components/ChatRoom/ChatsRoomScreen';
 import MyAnimatedSwitch from './components/animation/AnimatedSwitch';

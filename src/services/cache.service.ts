@@ -6,10 +6,12 @@ import {
   MessageFragment,
   useMessageAddedSubscription,
   GetChatsQuery,
+  GetChatQuery,
   ChatFragment,
   useChatAddedSubscription,
   useChatRemovedSubscription,
 } from '../graphQl/types';
+import { getChatQuery } from '../graphQl/queries/chat.query';
 
 type Client = Pick<
   DataProxy,
@@ -19,7 +21,9 @@ type Client = Pick<
 export const useCacheService = () => {
   useMessageAddedSubscription({
     onSubscriptionData: ({ client, subscriptionData: { data } }) => {
+      console.log("data", data)
       if (data) {
+        console.log("sub-data.messageAdded", data.messageAdded)
         writeMessage(client, data.messageAdded);
       }
     },
@@ -27,6 +31,7 @@ export const useCacheService = () => {
 
   useChatAddedSubscription({
     onSubscriptionData: ({ client, subscriptionData: { data } }) => {
+      console.log("data", data)
       if (data) {
         writeChat(client, data.chatAdded);
       }
@@ -34,7 +39,9 @@ export const useCacheService = () => {
   });
 
   useChatRemovedSubscription({
+    
     onSubscriptionData: ({ client, subscriptionData: { data } }) => {
+      console.log("data", data)
       if (data) {
         eraseChat(client, data.chatRemoved);
       }
@@ -43,6 +50,7 @@ export const useCacheService = () => {
 };
 
 export const writeMessage = (client: Client, message: MessageFragment) => {
+  // debugger
   type FullChat = { [key: string]: any };
   let fullChat;
 
@@ -85,9 +93,9 @@ export const writeMessage = (client: Client, message: MessageFragment) => {
   let data;
   try {
     // The readQuery method enables you to run GraphQL queries directly on your cache.
-    data = client.readQuery<GetChatsQuery>({
-      query: getChatsQuery,
-      variables: { id: message.chat?.id },
+    data = client.readQuery<GetChatQuery>({
+      query: getChatQuery,
+      variables: { chatId: message.chat?.id },
     });
   } catch (e) {
     console.log(e);
@@ -97,26 +105,31 @@ export const writeMessage = (client: Client, message: MessageFragment) => {
   if (!data || data === null) {
     return null;
   }
-  if (!data.chats || data.chats === undefined) {
+  if (!data.chat || data.chat === undefined) {
     return null;
   }
-  const chats = data.chats;
+  const chats = data.chat;
 
   console.log('chats', chats);
-  const chatIndex = chats.findIndex((c: any) => {
-    if (message === null || message.chat === null) return -1;
-    return c.id === message?.chat?.id;
-  });
-  if (chatIndex === -1) return;
-  const chatWhereAdded = chats[chatIndex];
+  // // @ts-ignore
+  // const chatIndex = [chats].findIndex((c: any) => {
+  //   if (message === null || message.chat === null) return -1;
+  //   return c.id === message?.chat?.id;
+  // });
+  // console.log("chatIndex", chatIndex)
+  // if (chatIndex === -1) return;
+  // // @ts-ignore
+  // const chatWhereAdded = chats[chatIndex];
 
-  // The chat will appear at the top of the ChatsList component
-  chats.splice(chatIndex, 1);
-  chats.unshift(chatWhereAdded);
+  // // The chat will appear at the top of the ChatsList component
+  // // @ts-ignore
+  // chats.splice(chatIndex, 1);
+  // // @ts-ignore
+  // chats.unshift(chatWhereAdded);
 
   client.writeQuery({
-    query: getChatsQuery,
-    data: { chats: chats },
+    query: getChatQuery,
+    data: { chat: chats },
   });
 };
 

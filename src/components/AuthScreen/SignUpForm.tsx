@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCallback, useState } from 'react';
-import { useSignIn, useSignUp } from '../../services/auth.service';
+import { useSignUp } from '../../services/auth.service';
 import { RouteComponentProps } from 'react-router-dom';
 import {
   SignForm,
