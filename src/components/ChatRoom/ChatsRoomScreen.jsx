@@ -32,7 +32,7 @@ const ChatsRoomScreen = ({
       document: messageAddedSubscription,
 
       updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data.messageAdded) return prev.chat;
+        if (!subscriptionData.data.messageAdded) return prev;
         const addedMessage = {
           ...subscriptionData.data.messageAdded,
           chat: {
@@ -49,6 +49,7 @@ const ChatsRoomScreen = ({
       },
     });
   }, [subscribeToMore, chatId]);
+
 
   useEffect(() => {
     subscribe();

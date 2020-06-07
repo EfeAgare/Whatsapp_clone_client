@@ -2,7 +2,7 @@ import Button from '@material-ui/core/Button';
 import SendIcon from '@material-ui/icons/Send';
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { TextareaAutosize, makeStyles } from '@material-ui/core';
+import EmojiInput from '../emoji/emoji';
 
 const Container = styled.div`
   display: flex;
@@ -10,7 +10,6 @@ const Container = styled.div`
   padding: 5px;
   width: calc(100% - 10px);
 `;
-
 
 const SendButton = styled(Button)`
   min-width: 50px !important;
@@ -39,26 +38,12 @@ const ActualInput = styled.input`
   box-shadow: 0 1px silver;
   font-size: 18px;
   line-height: 45px;
+  border-top-left-radius: unset;
+  border-bottom-left-radius: unset;
 `;
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: 'calc(100% - 50px)',
-    border: 'none',
-    borderRadius: '999px',
-    padding: '10px',
-    paddingLeft: '20px',
-    paddingRight: '20px',
-    outline: 'none',
-    boxShadow: '0 1px silver',
-    fontSize: '18px',
-    resize: 'none'
-  },
-}));
 
 const MessageInput = ({ onSendMessage }) => {
   const [message, setMessage] = useState('');
-  const classes = useStyles();
 
   const onKeyPress = (e) => {
     if (e.charCode === 13) {
@@ -82,6 +67,12 @@ const MessageInput = ({ onSendMessage }) => {
 
   return (
     <Container>
+      <EmojiInput
+        onSelection={(messageWithEmoji) => {
+          setMessage(messageWithEmoji);
+        }}
+        value={message}
+      />
       <ActualInput
         data-testid="message-input"
         type="text"

@@ -126,7 +126,6 @@ const MessageList = ({ messages, chatId, subscribeToMore }) => {
   const selfRef = useRef(null);
   const [openModal, setOpenModal] = useState(false);
   const [messageId, setMessageId] = useState(null);
-  const [canDelete, setCanDelete] = useState(false);
 
   const handleSelect = (id) => {
     setOpenModal(!openModal);
@@ -137,11 +136,10 @@ const MessageList = ({ messages, chatId, subscribeToMore }) => {
 
   const handleDelete = useCallback(() => {
     if (messageId === null) return null;
-    setCanDelete(true);
     deleteMessage({
       variables: { chatId, messageId },
     });
-  }, [deleteMessage, chatId, messageId, setCanDelete]);
+  }, [deleteMessage, chatId, messageId]);
 
   const messageDeleteSubscription = useCallback(
     (messageId) => {
@@ -169,16 +167,14 @@ const MessageList = ({ messages, chatId, subscribeToMore }) => {
   );
 
   useEffect(() => {
+    messageDeleteSubscription(messageId);
+
     if (!selfRef.current) return;
 
     const selfDOMNode = ReactDOM.findDOMNode(selfRef.current);
 
     selfDOMNode.scrollTop = Number.MAX_SAFE_INTEGER;
-    if (canDelete) {
-      messageDeleteSubscription(messageId);
-    }
-    console.log('canDelete', canDelete);
-  }, [messages.length, messageDeleteSubscription, canDelete, messageId]);
+  }, [messages.length, messageDeleteSubscription, messageId]);
 
   return (
     <Container ref={selfRef}>
