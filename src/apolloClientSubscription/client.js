@@ -1,13 +1,13 @@
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { getMainDefinition } from 'apollo-utilities';
-import { HttpLink } from 'apollo-link-http';
 import { WebSocketLink } from 'apollo-link-ws';
 import { split, ApolloLink } from 'apollo-link';
 import { setContext } from 'apollo-link-context';
+import { createUploadLink } from 'apollo-upload-client';
 
 // Create an http link:
-const httpLink = new HttpLink({
+const httpLink = new createUploadLink({
   uri: 'http://localhost:4000/graphql',
 });
 

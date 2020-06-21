@@ -152,8 +152,7 @@ const MessageList = ({ messages, chatId, subscribeToMore }) => {
           const messages = prev.chat.messages.filter(
             (item) => item.id !== messageId
           );
-          console.log('messages', messages);
-          console.log(' ...prev.chat,', prev.chat);
+
           return {
             chat: {
               ...prev.chat,
@@ -167,13 +166,15 @@ const MessageList = ({ messages, chatId, subscribeToMore }) => {
   );
 
   useEffect(() => {
-    messageDeleteSubscription(messageId);
-
     if (!selfRef.current) return;
+
+    messageDeleteSubscription(messageId);
 
     const selfDOMNode = ReactDOM.findDOMNode(selfRef.current);
 
     selfDOMNode.scrollTop = Number.MAX_SAFE_INTEGER;
+    
+    return () => {};
   }, [messages.length, messageDeleteSubscription, messageId]);
 
   return (

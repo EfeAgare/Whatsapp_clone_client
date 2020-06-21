@@ -1,11 +1,10 @@
 import gql from 'graphql-tag';
-import * as fragments from '../fragments';
- 
+
 export default gql`
-  subscription ChatAdded {
+  subscription chatAdded {
     chatAdded {
-      ...Chat
+      id
+      ok
     }
   }
-  ${fragments.chat}
 `;

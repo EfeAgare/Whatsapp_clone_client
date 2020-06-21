@@ -1,25 +1,15 @@
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { Toolbar, Button } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import React from 'react';
 import { useCallback } from 'react';
 import styled from 'styled-components';
+import { Container, Title } from '../common/ContainerStyle';
+import { NavBar } from '../common/NavBar';
 
-const Container = styled(Toolbar)`
-  display: flex;
-  background-color: var(--primary-bg);
-  color: var(--primary-text);
-  font-size: 20px;
-  line-height: 40px;
-`;
-
-const BackButton = styled(Button)`
+export const BackButton = styled(Button)`
   svg {
     color: var(--primary-text);
   }
-`;
-
-const Title = styled.div`
-  flex: 1;
 `;
 
 const ChatCreationNavbar = ({ history }) => {
@@ -33,6 +23,7 @@ const ChatCreationNavbar = ({ history }) => {
         <ArrowBackIcon />
       </BackButton>
       <Title>Create Chat</Title>
+      <NavBar />
     </Container>
   );
 };

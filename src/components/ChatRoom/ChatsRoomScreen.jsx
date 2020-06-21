@@ -27,12 +27,13 @@ const ChatsRoomScreen = ({
     fetchPolicy: 'cache-and-network',
   });
 
+ 
   const subscribe = useCallback(() => {
     subscribeToMore({
       document: messageAddedSubscription,
 
       updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data.messageAdded) return prev;
+        if (!subscriptionData.data.messageAdded) return prev.chat;
         const addedMessage = {
           ...subscriptionData.data.messageAdded,
           chat: {
@@ -50,11 +51,16 @@ const ChatsRoomScreen = ({
     });
   }, [subscribeToMore, chatId]);
 
-
   useEffect(() => {
-    subscribe();
+    let unsubscribe;
+
+    if (!unsubscribe) {
+      unsubscribe = subscribe();
+    }
     return () => {
-      // subscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [subscribe]);
 
@@ -83,34 +89,6 @@ const ChatsRoomScreen = ({
             },
           },
         },
-        // refetchQueries: [
-        //   {
-        //     query: getChatQuery,
-        //     variables: { chatId: chatId },
-        //   },
-        // ],
-        // update: (client, { data: addMessage }) => {
-        //   // The readQuery method enables you to run GraphQL queries directly on your cache.
-        //   let data = client.readQuery({
-        //     query: getChatQuery,
-        //     variables: { chatId: chatId },
-        //   });
-
-        //   console.log('efefe-caches', {
-        //     ...data.chat,
-        //     messages: [...data.chat.messages, addMessage.addMessage],
-        //   });
-        //   client.writeQuery({
-        //     query: getChatQuery,
-        //     variables: { chatId: chatId },
-        //     data: {
-        //       chat: {
-        //         ...data.chat,
-        //         messages: [...data.chat.messages, addMessage.addMessage],
-        //       },
-        //     },
-        //   });
-        // },
       });
     },
     [data, chatId, addMessage]
@@ -132,7 +110,7 @@ const ChatsRoomScreen = ({
 
   return (
     <Container>
-      {chat?.id && <ChatRoomNavBar chat={chat} history={history} />}
+      {chat?.id && <ChatRoomNavBar chat={chat} history={history} subscribeToMore={subscribeToMore}/>}
       {chat?.messages && (
         <MessagesList
           messages={chat.messages}

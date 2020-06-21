@@ -1,13 +1,11 @@
 import React, { useContext } from 'react';
 import { Redirect } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-
-import signInMutation from '../graphQl/mutations/signIn.mutation';
 import signUpMutation from '../graphQl/mutations/signUp.mutation';
 import meQuery from '../graphQl/queries/me.query';
 import { CircularProgress, makeStyles } from '@material-ui/core';
 
-const useStyles = makeStyles((theme) => ({
+export const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
     justifyContent: 'center',
@@ -17,6 +15,10 @@ const useStyles = makeStyles((theme) => ({
       marginLeft: theme.spacing(2),
     },
   },
+
+  padding: {
+    paddingLeft: '15px'
+  }
 }));
 
 const MyContext = React.createContext(null);
@@ -25,13 +27,7 @@ export const useMe = () => {
   return useContext(MyContext);
 };
 
-export const useSignIn = () => useMutation(signInMutation);
-
 export const useSignUp = () => useMutation(signUpMutation);
-
-export const useSignOut = () => {
-  // return localStorage.removeItem('token');
-};
 
 export const isSignedIn = () => {
   const token = localStorage.getItem('token');
@@ -55,9 +51,10 @@ export const withAuth = (Component) => {
 
     const classes = useStyles();
 
-    const { data, loading } = useQuery(meQuery);
+    const { data, loading } = useQuery(meQuery, {
+      fetchPolicy: 'cache-and-network',
+    });
 
-    console.log('data-auth', data);
 
     if (loading)
       return (
@@ -65,11 +62,8 @@ export const withAuth = (Component) => {
           <CircularProgress />
         </div>
       );
-
-    console.log('data-auth', data);
-
     return (
-      <MyContext.Provider value={data.me}>
+      <MyContext.Provider value={data?.me}>
         <Component {...props} />
       </MyContext.Provider>
     );

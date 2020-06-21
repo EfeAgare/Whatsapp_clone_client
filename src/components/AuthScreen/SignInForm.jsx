@@ -19,12 +19,10 @@ const SignInForm = ({ history }) => {
 
   const [signIn] = useMutation(signInMutation, {
     onCompleted({ signIn: { token } }) {
-      console.log('token-signin', token);
       localStorage.setItem('token', token);
       history.replace('/chats');
     },
     onError(error) {
-      console.log('error', error.message);
       setError(error.message || error);
     },
   });

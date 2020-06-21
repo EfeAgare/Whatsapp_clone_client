@@ -1,21 +1,14 @@
 import Button from '@material-ui/core/Button';
-import Toolbar from '@material-ui/core/Toolbar';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCallback } from 'react';
 import styled from 'styled-components';
 import DeleteIcon from '@material-ui/icons/Delete';
 import gql from 'graphql-tag';
-import { useRemoveChatMutation } from '../../graphQl/types';
-import { eraseChat } from '../../services/cache.service';
-
-const Container = styled(Toolbar)`
-  padding: 0;
-  display: flex;
-  flex-direction: row;
-  background-color: var(--primary-bg);
-  color: var(--primary-text);
-`;
+import { useMutation } from '@apollo/react-hooks';
+import { chatRemovedSubscription } from '../../graphQl/subscriptions/index';
+import { Container } from '../common/ContainerStyle';
+import { NavBar } from '../common/NavBar';
 
 const BackButton = styled(Button)`
   svg {
@@ -53,24 +46,46 @@ export const removeChatMutation = gql`
   }
 `;
 
-const ChatRoomNavBar = ({ chat, history }) => {
-  const [removeChat] = useRemoveChatMutation({
-    variables: {
-      chatId: chat.id,
-    },
-
-    update: (client, { data }) => {
-      if (data && data.removeChat) {
-        eraseChat(client, data.removeChat);
-      }
-    },
-  });
+const ChatRoomNavBar = ({ chat, history, subscribeToMore }) => {
+  const [removeChat] = useMutation(removeChatMutation);
 
   const handleRemoveChat = useCallback(() => {
-    removeChat().then(() => {
+    removeChat({
+      variables: {
+        chatId: chat.id,
+      },
+    }).then(() => {
       history.replace('/chats');
     });
-  }, [removeChat, history]);
+  }, [removeChat, history, chat.id]);
+
+  const subscribe = useCallback(() => {
+    subscribeToMore({
+      document: chatRemovedSubscription,
+
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data.chatRemoved) return prev.chat;
+        return {
+          chat: {
+            ...prev.chat,
+          },
+        };
+      },
+    });
+  }, [subscribeToMore]);
+
+  useEffect(() => {
+    let unsubscribe;
+
+    if (!unsubscribe) {
+      unsubscribe = subscribe();
+    }
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [subscribe]);
 
   const navBack = useCallback(() => {
     history.replace('/chats');
@@ -92,6 +107,7 @@ const ChatRoomNavBar = ({ chat, history }) => {
         <DeleteButton data-testid="delete-button" onClick={handleRemoveChat}>
           <DeleteIcon />
         </DeleteButton>
+        <NavBar/>
       </Rest>
     </Container>
   );

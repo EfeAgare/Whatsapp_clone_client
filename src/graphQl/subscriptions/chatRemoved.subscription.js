@@ -2,6 +2,8 @@ import gql from 'graphql-tag';
  
 export default gql`
   subscription chatRemoved {
-    chatRemoved
+    chatRemoved {
+      ok
+    }
   }
 `;

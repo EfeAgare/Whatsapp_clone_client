@@ -23,13 +23,11 @@ const theme = createMuiTheme({
 });
 
 ReactDOM.render(
-  <React.StrictMode>
-    <MuiThemeProvider theme={theme}>
-      <ApolloProvider client={client}>
-        <App />
-      </ApolloProvider>
-    </MuiThemeProvider>
-  </React.StrictMode>,
+  <MuiThemeProvider theme={theme}>
+    <ApolloProvider client={client}>
+      <App />
+    </ApolloProvider>
+  </MuiThemeProvider>,
   document.getElementById('root')
 );
 

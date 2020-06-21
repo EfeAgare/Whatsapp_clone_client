@@ -1,11 +1,13 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import moment from 'moment';
 import styled from 'styled-components';
-import { ListItem, List } from '@material-ui/core';
+import { ListItem, List, CircularProgress } from '@material-ui/core';
 import dotenv from 'dotenv';
 import { useQuery } from '@apollo/react-hooks';
 import { getChatsQuery } from '../../graphQl/queries/chats.query';
+import { useStyles } from '../../services/auth.service';
 
+const _ = require('lodash');
 dotenv.config();
 
 const Container = styled.div`
@@ -30,7 +32,7 @@ const ChatPicture = styled.img`
   border-radius: 50%;
 `;
 
-const ChatInfo = styled.div`
+export const ChatInfo = styled.div`
   width: calc(100% - 60px);
   height: 46px;
   padding: 15px 0;
@@ -39,11 +41,11 @@ const ChatInfo = styled.div`
   position: relative;
 `;
 
-const ChatName = styled.div`
+export const ChatName = styled.div`
   margin-top: 5px;
 `;
 
-const MessageContent = styled.div`
+export const MessageContent = styled.div`
   color: gray;
   font-size: 15px;
   margin-top: 5px;
@@ -60,8 +62,6 @@ const MessageDate = styled.div`
   font-size: 13px;
 `;
 
-// query
-
 const ChatsList = ({ history }) => {
   const navToChat = useCallback(
     (chat) => {
@@ -70,44 +70,76 @@ const ChatsList = ({ history }) => {
     [history]
   );
 
-  const { data } = useQuery(getChatsQuery);
-  console.log('getChatsQuery', data);
+  const { data, loading, refetch } = useQuery(getChatsQuery, {
+    fetchPolicy: 'network',
+  });
 
-  if (data === undefined || data.chats === undefined) {
-    return null;
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  const classes = useStyles();
+
+  if (loading)
+    return (
+      <div className={classes.root}>
+        <CircularProgress />
+      </div>
+    );
+
+  // if (
+  //   data.chats.map((e) => e.lastMessage === null)[0] === true
+  // ) {
+  //   return <Redirect to="/new-chat" />;
+  // }
+
+  if (data === undefined || data.chats === undefined || !data.chats.length) {
+    return (
+      <div className={classes.root}>
+        No chats for you yet, click to start chatting
+      </div>
+    );
   }
-  let chats = data.chats;
+
+  const chats = _.orderBy(
+    data.chats,
+    (o) => {
+      return moment(o.lastMessage?.createdAt).format('YYYY MMM DD, HH:mm');
+    },
+    ['desc']
+  );
 
   return (
     <Container>
       <StyledList>
         {chats &&
-          chats.map((chat) => (
-            <StyledListItem
-              key={chat.id}
-              button
-              onClick={navToChat.bind(null, chat)}
-              data-testid="chat">
-              <ChatPicture
-                src={chat.picture}
-                alt="Profile"
-                data-testid="picture"
-              />
-              <ChatInfo>
-                <ChatName data-testid="name">{chat.name}</ChatName>
-                {chat.lastMessage && (
-                  <React.Fragment>
-                    <MessageContent data-testid="content">
-                      {chat.lastMessage.content}
-                    </MessageContent>
-                    <MessageDate data-testid="date">
-                      {moment(chat.lastMessage.createdAt).format('HH:mm')}
-                    </MessageDate>
-                  </React.Fragment>
-                )}
-              </ChatInfo>
-            </StyledListItem>
-          ))}
+          chats.map(
+            (chat) =>
+              chat.lastMessage && (
+                <StyledListItem
+                  key={chat.id}
+                  button
+                  onClick={navToChat.bind(null, chat)}
+                  data-testid="chat">
+                  <ChatPicture
+                    src={chat.picture}
+                    alt="Profile"
+                    data-testid="picture"
+                  />
+                  <ChatInfo>
+                    <ChatName data-testid="name">{chat.name}</ChatName>
+                    <React.Fragment>
+                      <MessageContent data-testid="content">
+                        {chat.lastMessage.content}
+                      </MessageContent>
+                      <MessageDate data-testid="date">
+                        {moment(chat.lastMessage.createdAt).format('HH:mm')}
+                      </MessageDate>
+                    </React.Fragment>
+                  </ChatInfo>
+                </StyledListItem>
+              )
+          )}
       </StyledList>
     </Container>
   );

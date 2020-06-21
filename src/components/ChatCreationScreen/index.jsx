@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import UsersList from '../Users/UsersList';
 import ChatCreationNavbar from './ChatCreationNavbar';
@@ -6,8 +6,9 @@ import ChatCreationNavbar from './ChatCreationNavbar';
 import gql from 'graphql-tag';
 
 import * as fragments from '../../graphQl/fragments';
-import { useAddChatMutation } from '../../graphQl/types';
-import { writeChat } from '../../services/cache.service';
+
+import { useMutation, useSubscription } from '@apollo/react-hooks';
+import { chatAddedSubscription } from '../../graphQl/subscriptions/index';
 
 // eslint-disable-next-line
 const Container = styled.div`
@@ -20,7 +21,7 @@ const StyledUsersList = styled(UsersList)`
   height: calc(100% - 56px);
 `;
 
-gql`
+const addChatMutation = gql`
   mutation AddChat($recipientId: ID!) {
     addChat(recipientId: $recipientId) {
       ...Chat
@@ -29,10 +30,14 @@ gql`
   ${fragments.chat}
 `;
 
-
-
 const ChatCreationScreen = ({ history }) => {
-  const [addChat] = useAddChatMutation();
+  const [addChat] = useMutation(addChatMutation);
+
+  useSubscription(chatAddedSubscription, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  useEffect(() => {});
 
   const onUserPick = useCallback(
     (user) =>
@@ -49,11 +54,6 @@ const ChatCreationScreen = ({ history }) => {
         },
         variables: {
           recipientId: user.id,
-        },
-        update: (client, { data }) => {
-          if (data && data.addChat) {
-            writeChat(client, data.addChat);
-          }
         },
       }).then((result) => {
         if (result && result.data !== null) {

@@ -6,5 +6,6 @@ export default gql`
     name
     picture
     username
+    aboutme
   }
 `;

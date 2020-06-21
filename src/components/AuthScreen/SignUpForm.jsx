@@ -1,6 +1,5 @@
 import React from 'react';
 import { useCallback, useState } from 'react';
-import { useSignUp } from '../../services/auth.service';
 import {
   SignForm,
   ActualForm,
@@ -10,6 +9,8 @@ import {
   Button,
   ErrorMessage,
 } from './form-components';
+import signUpMutation from '../../graphQl/mutations/signUp.mutation';
+import { useMutation } from 'react-apollo';
 
 const SignUpForm = ({ history }) => {
   const [name, setName] = useState('');
@@ -17,7 +18,6 @@ const SignUpForm = ({ history }) => {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState('');
-  const [signUp] = useSignUp();
 
   const updateName = useCallback(({ target }) => {
     setError('');
@@ -43,16 +43,19 @@ const SignUpForm = ({ history }) => {
     return !!(name && username && password && password === passwordConfirm);
   }, [name, username, password, passwordConfirm]);
 
+  const [signUp] = useMutation(signUpMutation, {
+    onCompleted({ signUp: { token } }) {
+      localStorage.setItem('token', token);
+      history.replace('/chats');
+    },
+    onError(error) {
+      setError(error.message || error);
+    },
+  });
+
   const handleSignUp = useCallback(() => {
-    signUp({ variables: { username, password, passwordConfirm, name } })
-      .then(({ signUp: token }) => {
-        localStorage.setItem('token', token);
-        history.replace('/chats');
-      })
-      .catch((error) => {
-        setError(error.message || error);
-      });
-  }, [name, username, password, passwordConfirm, history, signUp]);
+    signUp({ variables: { username, password, passwordConfirm, name } });
+  }, [name, username, password, passwordConfirm, signUp]);
 
   return (
     <SignForm>
